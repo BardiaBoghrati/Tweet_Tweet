@@ -9,7 +9,6 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
@@ -46,39 +45,7 @@ public class ExtractTest {
 	 * 		(2) not (1)
 	 * 
 	 * Partitioning for get mentioned users:
-	 * 
-	 * contains no tweets; (17)
-	 * -------------------
-	 * contains exactly one tweet:
-	 * 	contains a user-name mention:
-	 * 		contains one user-name mention:
-	 * 			the user-name is preceded by hashtag, (1)
-	 * 			the user-name is preceded by valid user-name character, (2)
-	 * 			the user-name is preceded by invalid user-name character, (3)
-	 * 			the user-name is preceded by nothing; (4)
-	 * 		contains more than one user-name mention:
-	 * 			contains a user-name-mention is preceded by a user-name mention,(5)
-	 * 			does not contains a user-name mention preceded by another user-name mention; (6)
-	 * 	contains no user-name mention; (7)
-	 * 	------------
-	 * 	contains "@" followed by invalid user-name, (8)
-	 * 	else; (9)
-	 * 
-	 * contains more than one tweet:
-	 * 	contains pair of tweets with user-mentions:
-	 * 		contains user-name mentions in common, (10)
-	 * 		contains no user-name mentions in common; (11) 	
-	 * 	contains at most one tweet with user-name mention; (12)
-	 * --------------
-	 * contains pair of user-name mentions:
-	 * 	contains pair of user-name mentions with same user-names:
-	 * 		differing in case, (13)
-	 * 		not differing in case; (14)
-	 * 	all user-name mentions different; (15)
-	 * contains at most one user-name mention; (16)
-	 * 
-	 * 
-	 * 
+	 *  
 	 * contains no tweets, (1.1)
 	 * contains exactly one tweet, (1.2)
 	 * contains more than one tweet; (1.3)
@@ -115,14 +82,11 @@ public class ExtractTest {
 	 * 	 	
 	 * 
 	 * has "@" (3.1):
-	 * 	has "@" followed by valid user-name, (1.1)
+	 * 	has "@" followed by invalid user-name, (1.1)
 	 * 	else; (1.2)
-	 * 
-	 * 	has "@" followed by invalid user-name, (2.1)
-	 * 	else; (2.2)
 	 * 	
-	 * 	has "@" followed by nothing, (3.1)
-	 * 	else; (3.2)
+	 * 	has "@" followed by nothing, (2.1)
+	 * 	else; (2.2)
 	 * has no "@"; (3.2)
 	 * 
 	 * has pair of tweets with mentions having user-names in common, (4.1)
@@ -144,9 +108,10 @@ public class ExtractTest {
     
     private static final Instant d1 = Instant.parse("2016-02-17T10:00:00Z");
     private static final Instant d2 = Instant.parse("2016-02-17T11:00:00Z");
-    private static final Instant d3 = Instant.parse("1939-09-01T12:00:00Z");
-    private static final Instant d4 = Instant.parse("1945-09-01T12:00:00Z");
-    private static final Instant d5 = Instant.parse("1776-07-01T12:00:00Z");
+    private static final Instant d3 = Instant.parse("1776-07-01T12:00:00Z");
+    private static final Instant d4 = Instant.parse("1939-09-01T12:00:00Z");
+    private static final Instant d5 = Instant.parse("1945-09-01T12:00:00Z");
+
     
     
 
@@ -154,10 +119,10 @@ public class ExtractTest {
     private static final Tweet tweet1 = new Tweet(1, "alyssa", "is it reasonable to talk about rivest so much?", d1);
     private static final Tweet tweet2 = new Tweet(2, "bbitdiddle", "rivest talk in 30 minutes #hype", d2);
     
-    private static final Tweet tweet3 = new Tweet(3, "me", "@A_b4@4AB_#4ab@_A4b", d1.plusMillis(5));
+    private static final Tweet tweet3 = new Tweet(3, "me", "@A_b4 @abc@b4c @4AB_ #4ab@abc @_A4b", d1.plusMillis(5));
     private static final Tweet tweet4 = new Tweet(4, "me", " @A.B4@A_B4@@B_A4 ", d1.plusMillis(10));
-    private static final Tweet tweet5 = new Tweet(5, "me", "C:@A_B4%n@A_B4%n@a_b4@.A4B.", d1.plusMillis(15));
-    private static final Tweet tweet6 = new Tweet(6, "me", "no user mentions", d1.plusMillis(20));
+    private static final Tweet tweet5 = new Tweet(5, "me", "C:@A_B4\n@A_B4\n@a_b4\n@AAA@.A4B.", d1.plusMillis(15));
+    private static final Tweet tweet6 = new Tweet(6, "me", "no user mentions@", d1.plusMillis(20));
     private static final Tweet tweet7 = new Tweet(7, "me", "", d3);
     
     private static final Tweet tweet8 = new Tweet(8, "me", "hello world!", d4);
@@ -224,7 +189,7 @@ public class ExtractTest {
         assertEquals("expected end", Instant.EPOCH, timespan.getEnd());
     }
     
-    // covers getMentionedUsers:
+    // covers getMentionedUsers: 2.2, 3.2
     @Test
     public void testGetMentionedUsersNoMention() {
 
@@ -233,7 +198,7 @@ public class ExtractTest {
         assertTrue("expected empty set", mentionedUsers.isEmpty());
     }
     
-    // covers getMentionedUsers:
+    // covers getMentionedUsers: 1.1
     @Test
     public void testGetMentionedUsersNoTweets() {
 
@@ -243,48 +208,66 @@ public class ExtractTest {
     }
     
     // covers getMentionedUsers:
+    // 1.2,
+    // 2.1: 1.1, 2.1,3.2, 4.2, 5.1, 6.2, 7.1, 8.2, 9.2
+    // 3.1: 1.2, 2.2
+    // 4.2, 5.2, 6.2, 7.2
     @Test
-    public void testGetMentionedUsersSingleTweet() {
+    public void testGetMentionedUsersSingleTweetWithMentionsPrecededByMentionAndHashtag() {
 
         Set<String> mentionedUsers = Extract.getMentionedUsers(Arrays.asList(tweet3));
         mentionedUsers = toLower(mentionedUsers);
-        Set<String> expectedSet = new HashSet<String>(Arrays.asList("a_b4","4ab","_a4b"));
+        Set<String> expectedSet = new HashSet<String>(Arrays.asList("a_b4","4ab_","_a4b"));
         
-        assertTrue("expected mentionedUsers = {a_b4,4ab,_a4b}", mentionedUsers.equals(expectedSet));
+        assertTrue("expected mentionedUsers = " + expectedSet + " but got " + mentionedUsers , mentionedUsers.equals(expectedSet));
     }
     
     // covers getMentionedUsers:
+    // 1.2
+    // 2.1: 1.1, 2.1, 3.2, 4.1, 5.1, 6.1, 7.1, 8.1, 9.1
+    // 3.1: 1.1, 2.2
+    // 4.1, 5.2, 6.2, 7.2
     @Test
-    public void testGetMentionedMentionsInCommon() {
+    public void testGetMentionedMentionsInCommonBothSameCaseAndDifferingCase() {
 
         Set<String> mentionedUsers = Extract.getMentionedUsers(Arrays.asList(tweet3,tweet5));
         mentionedUsers = toLower(mentionedUsers);
-        Set<String> expectedSet = new HashSet<String>(Arrays.asList("a_b4","4ab","_a4b"));
+        Set<String> expectedSet = new HashSet<String>(Arrays.asList("a_b4","4ab_","_a4b"));
         
-        assertTrue("expected mentionedUsers = {a_b4,4aB,_a4b}", mentionedUsers.equals(expectedSet));
+        assertTrue("expected mentionedUsers = " + expectedSet + " but got " + mentionedUsers , mentionedUsers.equals(expectedSet));
     }
     
     // covers getMentionedUsers:
+    // 1.3
+    // 2.1: 1.2, 2.2, 3.1, 4.1, 5.2, 6.2, 7.2, 8.2, 9.2
+    // 3.1: 1.1, 2.1
+    // 4.2, 5.1, 6.2, 7.2
     @Test
-    public void testGetMentionedNoMentionsInCommon() {
+    public void testGetMentionedTweetPairNoMentionsInCommonOnlyOneHavingNoMentions() {
 
         Set<String> mentionedUsers = Extract.getMentionedUsers(Arrays.asList(tweet6,tweet4));
         mentionedUsers = toLower(mentionedUsers);
-        Set<String> expectedSet = new HashSet<String>(Arrays.asList("a","a_b4"));
-        assertTrue("expected mentionedUsers = {a,b_a4}", mentionedUsers.equals(expectedSet));
+        Set<String> expectedSet = new HashSet<String>(Arrays.asList("a"));
+        
+        assertTrue("expected mentionedUsers = " + expectedSet + " but got " + mentionedUsers , mentionedUsers.equals(expectedSet));
     }
     
-    // covers getMentionedUsers: 
+    // covers getMentionedUsers:
+    // 1.3
+    // 2.1: 1.2, 2.2, 3.1, 4.1, 5.2, 6.1, 7.1, 8.1, 9.1
+    // 3.1: 1.1, 2.2
+    // 4.2, 5.2, 6.1, 7.2
     @Test
-    public void testGetMentionedOverMultipleLines() {
-
+    public void testGetMentionedTweetPairWithNoMentionsIncommonBothingHavingMentions() {
+        
         Set<String> mentionedUsers = Extract.getMentionedUsers(Arrays.asList(tweet4,tweet5));
         mentionedUsers = toLower(mentionedUsers);
-        Set<String> expectedSet = new HashSet<String>(Arrays.asList("a","b_a4","a_b4"));
-        assertTrue("expected mentionedUsers = {a,b_a4,a_b4}", mentionedUsers.equals(expectedSet));
+        Set<String> expectedSet = new HashSet<String>(Arrays.asList("a", "a_b4"));
+        
+        assertTrue("expected mentionedUsers = " + expectedSet + " but got " + mentionedUsers , mentionedUsers.equals(expectedSet));
     }
     
-    // covers getMentionedUsers: 
+    // covers getMentionedUsers: 7.1
     @Test
     public void testGetMentionedEmptyTweet() {
 
@@ -294,10 +277,10 @@ public class ExtractTest {
     }
     
     
-    private Set<String> toLower(Set<String> mentions){
+    private Set<String> toLower(Set<String> setOfStrings){
     	Set<String> s = new HashSet<String>();
-    	for(String mention: mentions){
-    		s.add(mention.toLowerCase());
+    	for(String str: setOfStrings){
+    		s.add(str.toLowerCase());
     	}
     	return s;
     }
