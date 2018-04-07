@@ -6,8 +6,6 @@ package twitter;
 import static org.junit.Assert.*;
 
 import java.time.Instant;
-import java.time.temporal.TemporalAdjusters;
-import java.time.temporal.TemporalAmount;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -106,7 +104,7 @@ public class FilterTest {
     private static final Tweet tweet2 = new Tweet(2, "bbitdiddle", "rivest talk in 30 minutes #hype", d2);
     
     private static final Tweet tweet3 = new Tweet(3, "john", "A\nB B C", d3);
-    private static final Tweet tweet4 = new Tweet(4, "john", "B Bb C\ta", d4);
+    private static final Tweet tweet4 = new Tweet(4, "JoHn", "B Bb C\ta", d4);
     private static final Tweet tweet5 = new Tweet(5, "donald", " \rA\f b  ", d2);
     private static final Tweet tweet6 = new Tweet(6, "george", "A;B:c,D?e.", d2);
     

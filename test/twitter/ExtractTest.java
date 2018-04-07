@@ -125,7 +125,7 @@ public class ExtractTest {
     private static final Tweet tweet6 = new Tweet(6, "me", "no user mentions@", d1.plusMillis(20));
     private static final Tweet tweet7 = new Tweet(7, "me", "", d3);
     
-    private static final Tweet tweet8 = new Tweet(8, "me", "hello world!", d4);
+    private static final Tweet tweet8 = new Tweet(8, "me", "@b @C @c", d4);
     private static final Tweet tweet9 = new Tweet(9, "me", "hello world!", d5); 
     private static final Tweet tweet10 = new Tweet(10, "me", "hello world!", Instant.MIN);
     private static final Tweet tweet11 = new Tweet(11, "me", "hello world!", Instant.MAX);
@@ -276,6 +276,14 @@ public class ExtractTest {
         assertTrue("expected empty set", mentionedUsers.isEmpty());
     }
     
+    @Test
+    public void testGetMentionedUsernamesDifferingIncaseWithinSameTweet(){
+        Set<String> mentionedUsers = Extract.getMentionedUsers(Arrays.asList(tweet8));
+        mentionedUsers = toLower(mentionedUsers);
+        Set<String> expectedSet = new HashSet<String>(Arrays.asList("b", "c"));
+        
+        assertEquals(expectedSet, mentionedUsers);
+    }
     
     private Set<String> toLower(Set<String> setOfStrings){
     	Set<String> s = new HashSet<String>();

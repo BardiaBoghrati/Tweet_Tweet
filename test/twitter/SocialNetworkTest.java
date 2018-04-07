@@ -46,6 +46,11 @@ public class SocialNetworkTest {
      * else (6.2);
      */
     
+    // NOTE: for asserting the outputs of the test cases, i choose to use the uncommented assertion instead of commented ones because i was not sure
+    // if the specification for SocialNetwork guarantees that the map M has property such that M.get(x) and M.get(x.toLower()) have the same results for 
+    // any string, or whether it places the burden on user to makes user the keys are equivalent during retrieval. The commented code places the burden
+    // on the implementer rather than the client. My implementation of SocialNetwork is such that either works.
+    
     //covers guessFollowsGraph(): 1.1
     @Test
     public void testGuessFollowsGraphEmpty() {
@@ -60,7 +65,8 @@ public class SocialNetworkTest {
         final List<Tweet> evidence = Arrays.asList(new Tweet(1,"A", "mentioning my self @A", Instant.EPOCH));
         Map<String, Set<String>> followsGraph = SocialNetwork.guessFollowsGraph(evidence);
         
-        assertFalse(followsGraph.getOrDefault("A", Collections.emptySet()).contains("A"));
+        //assertFalse(followsGraph.getOrDefault("A", Collections.emptySet()).contains("A"));
+        assertFalse(TwitterUtility.containsUsername(TwitterUtility.get(followsGraph, "A"), "A"));
     }
     
     //covers guessFollowsGraph(): 1.3, 2.2, 3.2, 4.1, 5.1, 6.2
@@ -71,9 +77,13 @@ public class SocialNetworkTest {
         final List<Tweet> evidence = Arrays.asList(t1, t2);
         Map<String, Set<String>> followsGraph = SocialNetwork.guessFollowsGraph(evidence);
         
-        assertFalse(followsGraph.getOrDefault("A", Collections.emptySet()).contains("A"));
-        assertFalse(followsGraph.getOrDefault("D", Collections.emptySet()).contains("D"));
-        assertTrue(followsGraph.getOrDefault("a", Collections.emptySet()).containsAll(Arrays.asList("B","C")));
+//        assertFalse(followsGraph.getOrDefault("A", Collections.emptySet()).contains("A"));
+//        assertFalse(followsGraph.getOrDefault("D", Collections.emptySet()).contains("D"));
+//        assertTrue(followsGraph.getOrDefault("a", Collections.emptySet()).containsAll(Arrays.asList("B","C")));
+        assertFalse(TwitterUtility.containsUsername(TwitterUtility.get(followsGraph, "A"), "A"));
+        assertFalse(TwitterUtility.containsUsername(TwitterUtility.get(followsGraph, "D"), "D"));
+        assertTrue(TwitterUtility.containsAllUsernames(TwitterUtility.get(followsGraph, "a"), 
+                new HashSet<String>(Arrays.asList("B","C"))));
     }
     
     //covers guessFollowsGraph(): 1.3, 2.3, 3.2, 4.2, 5.2, 6.1
@@ -85,8 +95,13 @@ public class SocialNetworkTest {
         final List<Tweet> evidence = Arrays.asList(t1, t2);
         Map<String, Set<String>> followsGraph = SocialNetwork.guessFollowsGraph(evidence);
         
-        assertTrue(followsGraph.getOrDefault("A", Collections.emptySet()).containsAll(Arrays.asList("B")));
-        assertTrue(followsGraph.getOrDefault("b", Collections.emptySet()).containsAll(Arrays.asList("A","a")));
+        //assertTrue(followsGraph.getOrDefault("A", Collections.emptySet()).containsAll(Arrays.asList("B")));
+        //assertTrue(followsGraph.getOrDefault("b", Collections.emptySet()).containsAll(Arrays.asList("A","a")));
+        assertTrue(TwitterUtility.containsAllUsernames(TwitterUtility.get(followsGraph, "A"), 
+                new HashSet<String>(Arrays.asList("B"))));
+        assertTrue(TwitterUtility.containsAllUsernames(TwitterUtility.get(followsGraph, "b"), 
+                new HashSet<String>(Arrays.asList("A","a"))));
+        
     }
     
     /*
